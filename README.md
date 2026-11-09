@@ -26,7 +26,7 @@ O **Apê no Azul** organiza essas informações em uma experiência visual e dir
 |:--:|---|---|
 | 🏠 | **Visão geral** | Veja o panorama financeiro do mês, os próximos vencimentos e o progresso dos pagamentos. |
 | 📅 | **Parcelas do imóvel** | Organize vencimentos, atualize valores dos boletos e registre os pagamentos realizados. |
-| 💳 | **Gastos pessoais** | Adicione, edite e consulte suas despesas. Busque lançamentos e acompanhe os gastos por categoria. |
+| 💳 | **Gastos pessoais** | Registre despesas, defina limites por categoria e acompanhe contas recorrentes. |
 | 📊 | **Previsão financeira** | Visualize os compromissos dos próximos 12 meses e identifique períodos que exigem mais planejamento. |
 | 🎯 | **Objetivos** | Defina quanto pretende guardar para a entrega das chaves, a mudança e as primeiras despesas da casa. |
 | ⚙️ | **Seu planejamento** | Personalize os dados do imóvel, a renda e os valores considerados nas projeções. |
