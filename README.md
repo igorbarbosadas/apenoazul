@@ -95,3 +95,10 @@ Para testar localmente, você pode executar `python -m http.server 8000` na past
 *Planeje hoje. Acompanhe cada etapa do seu imóvel.*
 
 </div>
+
+
+### Atualização v0.7
+
+- Corrigida validação de data no cadastro de gastos. Um erro de expressão regular bloqueava o salvamento mesmo com todos os campos preenchidos.
+- Após adicionar ou editar uma despesa, o mês exibido passa a corresponder à data lançada.
+- Dados já existentes no armazenamento local são preservados.
