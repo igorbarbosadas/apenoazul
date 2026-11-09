@@ -14,7 +14,7 @@ export const blank=()=>({schema:2,properties:[],selectedProperty:null,transactio
 export function normalize(raw){let s=structuredClone(raw);s.schema=2;for(let k of ['properties','transactions','payments','recurrences','accounts','transfers','goals','documents'])if(!Array.isArray(s[k]))s[k]=[];s.budgets=s.budgets||{};s.settings={...blank().settings,...(s.settings||{})};s.meta=s.meta||{importWarnings:[]};return s}
 const amount=v=>Math.round(number(v)*100)/100;
 const dateValid=d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(String(d)))return false;const [y,m,day]=d.split('-').map(Number);const date=new Date(y,m-1,day,12);return date.getFullYear()===y&&date.getMonth()+1===m&&date.getDate()===day};
-export function validate(s){if(!s||typeof s!=='object'||!Array.isArray(s.transactions)||!Array.isArray(s.payments)||!Array.isArray(s.properties))return 'Estrutura do backup inválida';if(s.transactions.length>100000||s.payments.length>30000)return 'Quantidade de registros excedida';for(let t of s.transactions){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(t.id))||!dateValid(t.date)||!['income','expense'].includes(t.kind)||!Number.isFinite(Number(t.amount))||number(t.amount)<0||number(t.amount)>1e9)return 'Movimentação inválida'}for(let p of s.payments){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(p.id))||!dateValid(p.date)||number(p.amount)<0||number(p.paid)<0)return 'Parcela inválida'}for(let key of ['properties','recurrences','accounts','transfers','goals','documents'])for(let item of s[key]||[]){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(item.id)))return 'Identificador inválido em '+key}for(let t of s.transfers||[]){if(!Number.isFinite(Number(t.amount))||Number(t.amount)<=0||Number(t.amount)>1e9||t.from===t.to||!dateValid(t.date))return 'Transferência inválida'}for(let a of s.accounts||[]){if(!Number.isFinite(Number(a.opening))||Math.abs(Number(a.opening))>1e9)return 'Saldo inicial da conta inválido'}
+export function validate(s){if(!s||typeof s!=='object'||!Array.isArray(s.transactions)||!Array.isArray(s.payments)||!Array.isArray(s.properties))return 'Estrutura do backup inválida';if(s.transactions.length>100000||s.payments.length>30000)return 'Quantidade de registros excedida';for(let t of s.transactions){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(t.id))||!dateValid(t.date)||!['income','expense'].includes(t.kind)||!Number.isFinite(Number(t.amount))||number(t.amount)<0||number(t.amount)>1e9)return 'Movimentação inválida'}if(new Set(s.transactions.map(x=>x.id)).size!==s.transactions.length)return 'Movimentações duplicadas no backup';for(let p of s.payments){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(p.id))||!dateValid(p.date)||number(p.amount)<0||number(p.paid)<0)return 'Parcela inválida'}for(let key of ['properties','recurrences','accounts','transfers','goals','documents'])for(let item of s[key]||[]){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(item.id)))return 'Identificador inválido em '+key}for(let t of s.transfers||[]){if(!Number.isFinite(Number(t.amount))||Number(t.amount)<=0||Number(t.amount)>1e9||t.from===t.to||!dateValid(t.date))return 'Transferência inválida'}for(let a of s.accounts||[]){if(!Number.isFinite(Number(a.opening))||Math.abs(Number(a.opening))>1e9)return 'Saldo inicial da conta inválido'}
  const accountIds=new Set((s.accounts||[]).map(a=>a.id));
  for(const p of s.payments||[]){for(const h of p.history||[]){
   if(h.accountId!==undefined&&h.accountId!==null&&h.accountId!==''&&!accountIds.has(h.accountId))return 'Conta de origem inexistente em pagamento do imóvel';
@@ -77,6 +77,22 @@ export function cashflow(s,key){
 
 export function series(s,key,n=6){return Array.from({length:n},(_,i)=>cashflow(s,addMonths(key,i-n+1)))}
 export function projection(s,key,n=12){return Array.from({length:n},(_,i)=>cashflow(s,addMonths(key,i)))}
+// Uma compra parcelada gera compromissos futuros, não pagamentos realizados.
+// Todos os valores são distribuídos em centavos, sem perder nem criar centavos.
+export function installmentSchedule({total, count, firstDate}){
+ const value=Number(total), quantity=Number(count);
+ if(!Number.isFinite(value)||value<=0||value>1e9||!Number.isInteger(quantity)||quantity<2||quantity>120||!dateValid(firstDate))throw Error('Informe valor, 2 a 120 parcelas e primeira data válida.');
+ const totalCents=cents(value);
+ if(totalCents<quantity)throw Error('Cada parcela deve ter pelo menos R$ 0,01.');
+ const base=Math.floor(totalCents/quantity),rem=totalCents%quantity;
+ const [year,month,day]=firstDate.split('-').map(Number);
+ return Array.from({length:quantity},(_,i)=>{
+  const date=new Date(year,month-1+i,1,12);
+  const lastDay=new Date(date.getFullYear(),date.getMonth()+1,0).getDate();
+  const due=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(Math.min(day,lastDay)).padStart(2,'0')}`;
+  return {number:i+1, date:due, amount:reais(base+(i<rem?1:0))};
+ });
+}
 export function categorySummary(s,key){const map=new Map();for(let t of s.transactions.filter(t=>monthOf(t.date)===key&&t.kind==='expense'&&t.status==='paid'))map.set(t.category||'Outros',(map.get(t.category||'Outros')||0)+t.amount);return [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name,total])=>({name,total}))}
 // Pagamentos do imóvel só alteram uma conta quando o usuário informa a conta de origem.
 // Histórico legado não é associado automaticamente a nenhuma conta.
