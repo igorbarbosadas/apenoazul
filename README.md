@@ -1,76 +1,35 @@
 <div align="center">
 
-<img src="assets/capa.svg" alt="Apê no Azul. Seu imóvel planejado, suas finanças em dia." width="100%" />
+# 🏡 Apê no Azul
 
-# Apê no Azul 🏡
+### Seu imóvel planejado. Suas finanças em dia.
 
-### O controle financeiro da sua jornada até as chaves.
+Organize a compra do seu imóvel, acompanhe parcelas e entenda seus gastos em um lugar só.
 
-**Do primeiro boleto à mudança, acompanhe seu imóvel e suas finanças em um só lugar.**
-
-[**Conhecer o aplicativo**](https://igorbarbosadas.github.io/apenoazul/) · [**Explorar funcionalidades**](#o-que-você-pode-fazer) · [**Começar a usar**](#comece-em-três-passos)
+[**Acessar o aplicativo**](https://igorbarbosadas.github.io/apenoazul/)
 
 </div>
 
----
+## Uma visão mais clara do seu dinheiro
 
-## Seu imóvel merece um planejamento mais simples
+O **Apê no Azul** foi criado para quem quer acompanhar a conquista do imóvel sem perder o controle das finanças. Ele reúne os compromissos da compra, os gastos cotidianos e as metas para a entrega das chaves.
 
-Comprar um imóvel envolve muito mais do que pagar uma parcela por mês. Entrada, cobranças intermediárias, financiamento, gastos pessoais e os custos da mudança precisam caber no seu orçamento.
+## O que você encontra no aplicativo
 
-O **Apê no Azul** organiza essas informações em uma experiência visual e direta para você acompanhar compromissos, identificar meses mais apertados e se preparar para cada etapa da compra.
+- **Visão geral:** saldo projetado, próximos vencimentos e progresso dos pagamentos.
+- **Parcelas do imóvel:** calendário de compromissos e registro do que já foi pago.
+- **Meus gastos:** despesas por categoria, rendimentos por origem, orçamento e contas fixas.
+- **Lançamentos repetidos:** organize entradas e saídas mensais, semanais ou anuais, com confirmação a cada ocorrência.
+- **Previsão:** identifique meses com pagamentos mais altos e planeje-se com antecedência.
+- **Relatórios:** visualize a evolução das despesas, categorias e histórico de movimentações.
+- **Objetivos:** acompanhe a reserva para documentação, móveis e mudança.
 
-## O que você pode fazer
+## Para quem é
 
-| | Funcionalidade | Como ajuda você |
-|:--:|---|---|
-| 🏠 | **Visão geral** | Veja o panorama financeiro do mês, os próximos vencimentos e o progresso dos pagamentos. |
-| 📅 | **Parcelas do imóvel** | Organize vencimentos, atualize valores dos boletos e registre os pagamentos realizados. |
-| 💳 | **Gastos e rendimentos** | Registre de onde veio cada rendimento, diferencie valores recebidos e previstos, acompanhe despesas e contas recorrentes. |
-| 📊 | **Previsão financeira** | Visualize os compromissos dos próximos 12 meses e identifique períodos que exigem mais planejamento. |
-| 📈 | **Relatórios** | Compare meses, descubra categorias com maior gasto e exporte seus lançamentos. |
-| 🎯 | **Objetivos** | Defina quanto pretende guardar para a entrega das chaves, a mudança e as primeiras despesas da casa. |
-| ⚙️ | **Seu planejamento** | Personalize os dados do imóvel, a renda e os valores considerados nas projeções. |
+Para quem está se planejando para comprar, já comprou um imóvel na planta ou quer organizar as despesas da casa com clareza.
 
-## Planeje cada etapa com mais clareza
+## Comece agora
 
-<table>
-<tr>
-<td width="33%" valign="top">
-<h3>01 · Organize</h3>
-<p>Reúna as parcelas do apartamento e registre suas despesas do dia a dia.</p>
-</td>
-<td width="33%" valign="top">
-<h3>02 · Antecipe</h3>
-<p>Consulte os meses de maior comprometimento financeiro antes de assumir novos gastos.</p>
-</td>
-<td width="33%" valign="top">
-<h3>03 · Conquiste</h3>
-<p>Acompanhe seu progresso e monte uma reserva para receber as chaves com mais tranquilidade.</p>
-</td>
-</tr>
-</table>
+Acesse **[Apê no Azul](https://igorbarbosadas.github.io/apenoazul/)** pelo computador ou celular.
 
-## Feito para acompanhar sua rotina
-
-- **Visual claro:** informações importantes aparecem logo na tela inicial.
-- **Acesso pelo celular ou computador:** interface adaptada a diferentes tamanhos de tela.
-- **Seu orçamento em contexto:** os gastos pessoais aparecem ao lado dos compromissos do imóvel.
-- **Consultas rápidas:** selecione o mês, encontre pagamentos e veja o que vem pela frente.
-- **Controle nas suas mãos:** ajuste o planejamento conforme novos boletos e despesas surgirem.
-
-## Comece em três passos
-
-1. **Abra o [Apê no Azul](https://igorbarbosadas.github.io/apenoazul/)** no navegador.
-2. **Personalize seu planejamento** com os dados do imóvel e seus valores financeiros.
-3. **Registre gastos e pagamentos** para acompanhar a evolução ao longo dos meses.
-
-<div align="center">
-
-### Seu próximo passo começa com organização.
-
-[**🏡 Acessar o Apê no Azul**](https://igorbarbosadas.github.io/apenoazul/)
-
-*Seu imóvel planejado. Suas finanças em dia.*
-
-</div>
+O aplicativo está em desenvolvimento e recebe novas funcionalidades de forma contínua.
