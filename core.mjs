@@ -27,7 +27,49 @@ export function recurrenceDates(r,key){if(!r.active||!r.start||monthOf(r.start)>
 return output}
 export function recurringDue(s,key){return s.recurrences.flatMap(r=>recurrenceDates(r,key).map(date=>({...r,date,occurrenceId:r.id+'|'+date}))).filter(r=>!s.transactions.some(t=>t.recurrenceId===r.id&&t.date===r.date));}
 export function paymentsFor(s,key){return s.payments.filter(p=>p.kind!=='financing'&&monthOf(p.date)===key)}
-export function cashflow(s,key){const tx=s.transactions.filter(t=>monthOf(t.date)===key);const incomeReceived=tx.filter(t=>t.kind==='income'&&t.status==='received').reduce((a,t)=>a+t.amount,0);const incomePlanned=tx.filter(t=>t.kind==='income'&&t.status!=='received').reduce((a,t)=>a+t.amount,0);const spent=tx.filter(t=>t.kind==='expense'&&t.status==='paid').reduce((a,t)=>a+t.amount,0);const expensePlanned=tx.filter(t=>t.kind==='expense'&&t.status!=='paid').reduce((a,t)=>a+t.amount,0);const p=paymentsFor(s,key);const propertyPaid=s.payments.filter(t=>t.kind!=='financing').flatMap(t=>t.history?.length?t.history:(number(t.paid)>0?[{date:t.date,amount:t.paid}]:[])).filter(h=>monthOf(h.date)===key).reduce((a,h)=>a+number(h.amount),0);const propertyPending=p.reduce((a,t)=>a+Math.max(0,number(t.updated??t.amount)-number(t.paid)),0);const due=recurringDue(s,key);const repeatingIncome=due.filter(t=>t.kind==='income').reduce((a,t)=>a+t.amount,0);const repeatingExpenses=due.filter(t=>t.kind==='expense').reduce((a,t)=>a+t.amount,0);const knownIncome=incomeReceived+incomePlanned+repeatingIncome;const referenceUsed=(incomeReceived+incomePlanned===0)&&s.settings.referenceEnabled?Math.max(0,number(s.settings.referenceIncome)-repeatingIncome):0;const incomeForecast=knownIncome+referenceUsed;const bankPay=(!s.settings.bankStart||key>=monthOf(s.settings.bankStart))?number(s.settings.bankPayment):0;const reserve=number(s.settings.reserve);const committed=spent+expensePlanned+propertyPaid+propertyPending+repeatingExpenses+bankPay+reserve;const incomeIncomplete=!s.settings.referenceEnabled&&(incomeReceived+incomePlanned===0);return {key,incomeIncomplete,incomeReceived,incomePlanned,spent,expensePlanned,propertyPaid,propertyPending,repeatingIncome,repeatingExpenses,referenceUsed,incomeForecast,bankPay,reserve,committed,projected:incomeForecast-committed,realized:incomeReceived-spent-propertyPaid,txCount:tx.length,unconfirmed:due.length};}
+// Valores financeiros são arredondados em centavos apenas na apresentação dos agregados.
+// A mesma função é usada por Início, Finanças, Agenda e Relatórios.
+export const cents=value=>Math.round((number(value)+Number.EPSILON)*100);
+export const reais=value=>Math.round(value)/100;
+export function cashflow(s,key){
+ const tx=s.transactions.filter(t=>monthOf(t.date)===key);
+ const sum=(items,get=t=>t.amount)=>reais(items.reduce((total,t)=>total+cents(get(t)),0));
+ const incomeReceived=sum(tx.filter(t=>t.kind==='income'&&t.status==='received'));
+ const incomePlanned=sum(tx.filter(t=>t.kind==='income'&&t.status!=='received'));
+ const spent=sum(tx.filter(t=>t.kind==='expense'&&t.status==='paid'));
+ const expensePlanned=sum(tx.filter(t=>t.kind==='expense'&&t.status!=='paid'));
+ const p=paymentsFor(s,key);
+ // Pagamentos realizados são reconhecidos no mês em que o dinheiro saiu,
+ // não no mês do vencimento. Histórico nunca é somado novamente ao campo paid.
+ const paymentHistory=s.payments.filter(t=>t.kind!=='financing').flatMap(t=>
+  t.history?.length?t.history:(number(t.paid)>0?[{date:t.date,amount:t.paid}]:[]));
+ const propertyPaid=sum(paymentHistory.filter(h=>monthOf(h.date)===key));
+ const propertyPending=sum(p,t=>Math.max(0,number(t.updated??t.amount)-number(t.paid)));
+ const due=recurringDue(s,key);
+ const repeatingIncome=sum(due.filter(t=>t.kind==='income'));
+ const repeatingExpenses=sum(due.filter(t=>t.kind==='expense'));
+ // Referência é uma estimativa apenas para um mês sem rendimentos lançados.
+ // Se o usuário já registrou receita, mesmo parcial, não inventamos o restante.
+ const knownIncome=reais(cents(incomeReceived)+cents(incomePlanned)+cents(repeatingIncome));
+ const hasIncomeEntries=tx.some(t=>t.kind==='income');
+ const referenceUsed=!hasIncomeEntries&&s.settings.referenceEnabled
+  ? Math.max(0,reais(cents(s.settings.referenceIncome)-cents(repeatingIncome))):0;
+ const incomeForecast=reais(cents(knownIncome)+cents(referenceUsed));
+ // Sem início contratual informado, não presumimos prestação bancária desde o início.
+ const bankNeedsStart=number(s.settings.bankPayment)>0&&!s.settings.bankStart;
+ const bankPay=!bankNeedsStart&&s.settings.bankStart&&key>=monthOf(s.settings.bankStart)
+  ? reais(cents(s.settings.bankPayment)):0;
+ const reserve=reais(cents(s.settings.reserve));
+ const committed=reais([spent,expensePlanned,propertyPaid,propertyPending,repeatingExpenses,bankPay,reserve].reduce((v,n)=>v+cents(n),0));
+ const projected=reais(cents(incomeForecast)-cents(committed));
+ const realized=reais(cents(incomeReceived)-cents(spent)-cents(propertyPaid));
+ const incomeIncomplete=!s.settings.referenceEnabled&&!hasIncomeEntries;
+ return {key,incomeIncomplete,incomeReceived,incomePlanned,spent,expensePlanned,
+  propertyPaid,propertyPending,repeatingIncome,repeatingExpenses,referenceUsed,
+  incomeForecast,bankPay,bankNeedsStart,reserve,committed,projected,realized,
+  txCount:tx.length,unconfirmed:due.length};
+}
+
 export function series(s,key,n=6){return Array.from({length:n},(_,i)=>cashflow(s,addMonths(key,i-n+1)))}
 export function projection(s,key,n=12){return Array.from({length:n},(_,i)=>cashflow(s,addMonths(key,i)))}
 export function categorySummary(s,key){const map=new Map();for(let t of s.transactions.filter(t=>monthOf(t.date)===key&&t.kind==='expense'&&t.status==='paid'))map.set(t.category||'Outros',(map.get(t.category||'Outros')||0)+t.amount);return [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name,total])=>({name,total}))}
