@@ -179,7 +179,7 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif}
 <div class="two"><div class="card report-card"><h3 class="section-title">Categorias do mês</h3><p class="tiny">Distribuição dos seus lançamentos</p><div id="reportCategories"></div></div><div class="card report-card"><h3 class="section-title">Resumo do mês</h3><div id="reportSummary"></div></div></div>
 <div class="report-disclaimer">Os relatórios mostram informações cadastradas neste navegador. Os valores do contrato podem sofrer reajustes. O saldo projetado não equivale ao saldo bancário.</div>
 </section><section id="objetivos" class="page"><div class="card"><h3 class="section-title">Preparar a chegada das chaves</h3><p class="sub">Estime os valores para documentos, mudança, móveis e reserva.</p><div class="formrow"><div class="field"><label>Meta total para a mudança (R$)</label><input id="goal" type="number" step="0.01" min="0"></div><div class="field"><label>Quanto já guardou (R$)</label><input id="saved" type="number" step="0.01" min="0"></div></div><div class="row"><button class="primary" onclick="saveSettings()">Salvar objetivo</button><span class="tiny" id="goalDesc"></span></div><div class="progress"><div id="goalBar" style="width:0%"></div></div></div><div class="card" style="margin-top:16px"><h3 class="section-title">Etapas recomendadas</h3><div class="item"><div><div class="item-title">Documentação e registro</div><div class="item-sub">ITBI, cartório e eventuais custos bancários</div></div><span class="pill due">Planejar</span></div><div class="item"><div><div class="item-title">Reserva para imprevistos</div><div class="item-sub">Evite gastar toda a reserva com móveis</div></div><span class="pill due">Planejar</span></div><div class="item"><div><div class="item-title">Mudança e itens essenciais</div><div class="item-sub">Priorize o que é necessário para morar</div></div><span class="pill due">Planejar</span></div></div></section>
-<section id="config" class="page"><div class="card"><h3 class="section-title">Seu imóvel e suas finanças</h3><p class="sub" style="margin-bottom:23px">Atualize seu imóvel e seus valores. O cronograma original pode ser recuperado em caso de necessidade.</p><div class="formrow"><div class="field"><label>Nome do imóvel</label><input id="propertyLabel" maxlength="120" placeholder="Meu apartamento"></div><div class="field"><label>Preço original (R$)</label><input id="propertyPrice" type="number" min="0" step="0.01"></div><div class="field"><label>Previsão de entrega</label><input id="propertyDelivery" type="date"></div><div class="field"><label>Financiamento previsto (R$)</label><input id="propertyFinancing" type="number" min="0" step="0.01"></div></div><div class="formrow"><div class="field"><label>Renda líquida estimada de referência (R$)</label><input id="income" type="number" min="0" step="0.01"></div><div class="field"><label>Extras mensais de referência (R$)</label><input id="extra" type="number" min="0" step="0.01"></div><div class="field"><label>Prestação bancária mensal (R$)</label><input id="bankInstallment" type="number" min="0" step="0.01"></div><div class="field"><label>Reserva mensal planejada (R$)</label><input id="reserve" type="number" min="0" step="0.01"></div></div><div class="row"><button class="primary" onclick="saveSettings()">Salvar alterações</button><button class="secondary" onclick="exportData()">Exportar dados (JSON)</button></div></div><div class="card" style="margin-top:17px"><h3 class="section-title">Sobre esta versão</h3><div class="mutedcard">Apê no Azul v0.19. Inicia com seu imóvel e os 41 compromissos nominais do contrato. Os pagamentos realizados precisam ser confirmados. Ainda não possui login, sincronização entre dispositivos, cobrança ou notificações reais. Não use como armazenamento único de documentos ou comprovantes. Exporte os dados periodicamente.</div></div><div class="card" style="margin-top:17px"><h3 class="section-title">Seus dados e segurança</h3><p class="sub">Nesta versão, tudo é salvo neste navegador. Você pode fazer backup ou recuperar dados exportados.</p><div class="tool-grid" style="margin-top:15px"><div class="tool-card"><b>Baixar backup</b><p>Guarde seus lançamentos em um arquivo JSON para restaurar depois.</p><button class="secondary" onclick="exportData()">Exportar dados</button></div><div class="tool-card"><b>Restaurar backup</b><p>Importe um JSON do Apê no Azul. Seus dados atuais serão substituídos após confirmação.</p><button class="secondary" onclick="document.getElementById('backupImport').click()">Importar arquivo</button><input id="backupImport" type="file" accept="application/json,.json" hidden onchange="importData(event)"></div><div class="tool-card"><b>Dados da versão anterior</b><p id="legacyNotice">Verificando dados salvos no navegador anterior...</p><button id="legacyButton" class="secondary" onclick="recoverLegacy()">Recuperar versão 0.2</button></div><div class="tool-card"><b>Carregar contrato de referência</b><p>Recarregue os 41 compromissos do contrato original. Confirme antes, pois substitui os dados atuais.</p><button class="secondary" onclick="resetDemo()">Carregar contrato</button></div></div><p class="storage-hint">A hospedagem no GitHub Pages não oferece contas nem sincronização. Seus registros não são enviados para um servidor.</p></div></section><div class="footer">apê no azul · v0.19 · GitHub Pages · armazenamento local</div></main></div>
+<section id="config" class="page"><div class="card"><h3 class="section-title">Seu imóvel e suas finanças</h3><p class="sub" style="margin-bottom:23px">Atualize seu imóvel e seus valores. O cronograma original pode ser recuperado em caso de necessidade.</p><div class="formrow"><div class="field"><label>Nome do imóvel</label><input id="propertyLabel" maxlength="120" placeholder="Meu apartamento"></div><div class="field"><label>Preço original (R$)</label><input id="propertyPrice" type="number" min="0" step="0.01"></div><div class="field"><label>Previsão de entrega</label><input id="propertyDelivery" type="date"></div><div class="field"><label>Financiamento previsto (R$)</label><input id="propertyFinancing" type="number" min="0" step="0.01"></div></div><div class="formrow"><div class="field"><label>Renda líquida estimada de referência (R$)</label><input id="income" type="number" min="0" step="0.01"></div><div class="field"><label>Extras mensais de referência (R$)</label><input id="extra" type="number" min="0" step="0.01"></div><div class="field"><label>Prestação bancária mensal (R$)</label><input id="bankInstallment" type="number" min="0" step="0.01"></div><div class="field"><label>Reserva mensal planejada (R$)</label><input id="reserve" type="number" min="0" step="0.01"></div></div><div class="row"><button class="primary" onclick="saveSettings()">Salvar alterações</button><button class="secondary" onclick="exportData()">Exportar dados (JSON)</button></div></div><div class="card" style="margin-top:17px"><h3 class="section-title">Sobre esta versão</h3><div class="mutedcard">Apê no Azul v0.20. Inicia com seu imóvel e os 41 compromissos nominais do contrato. Os pagamentos realizados precisam ser confirmados. Ainda não possui login, sincronização entre dispositivos, cobrança ou notificações reais. Não use como armazenamento único de documentos ou comprovantes. Exporte os dados periodicamente.</div></div><div class="card" style="margin-top:17px"><h3 class="section-title">Seus dados e segurança</h3><p class="sub">Nesta versão, tudo é salvo neste navegador. Você pode fazer backup ou recuperar dados exportados.</p><div class="tool-grid" style="margin-top:15px"><div class="tool-card"><b>Baixar backup</b><p>Guarde seus lançamentos em um arquivo JSON para restaurar depois.</p><button class="secondary" onclick="exportData()">Exportar dados</button></div><div class="tool-card"><b>Restaurar backup</b><p>Importe um JSON do Apê no Azul. Seus dados atuais serão substituídos após confirmação.</p><button class="secondary" onclick="document.getElementById('backupImport').click()">Importar arquivo</button><input id="backupImport" type="file" accept="application/json,.json" hidden onchange="importData(event)"></div><div class="tool-card"><b>Dados da versão anterior</b><p id="legacyNotice">Verificando dados salvos no navegador anterior...</p><button id="legacyButton" class="secondary" onclick="recoverLegacy()">Recuperar versão 0.2</button><button class="secondary" onclick="restoreBeforeImport()">Recuperar última importação</button></div><div class="tool-card"><b>Carregar contrato de referência</b><p>Recarregue os 41 compromissos do contrato original. Confirme antes, pois substitui os dados atuais.</p><button class="secondary" onclick="resetDemo()">Carregar contrato</button></div></div><p class="storage-hint">A hospedagem no GitHub Pages não oferece contas nem sincronização. Seus registros não são enviados para um servidor.</p></div></section><div class="footer">apê no azul · v0.20 · GitHub Pages · armazenamento local</div></main></div>
 <nav class="mobile"><button class="active" data-page="dashboard"><span>▦</span>Início</button><button data-page="parcelas"><span>▤</span>Parcelas</button><button data-page="gastos"><span>◉</span>Finanças</button><button data-page="previsao"><span>▥</span>Previsão</button><button data-page="objetivos"><span>◎</span>Metas</button><button data-page="config"><span>⚙</span>Ajustes</button></nav>
 <div class="modal" id="incomeModal"><div class="modal-card"><h2 id="incomeEntryTitle">Novo rendimento</h2><p class="sub" style="margin:8px 0 20px">Registre o valor líquido, a origem e a data. Você decide se já recebeu.</p>
 <div class="formrow"><div class="field"><label>De onde veio</label><input id="incomeSource" maxlength="100" placeholder="Ex.: Salário, freela, venda, bônus"></div><div class="field"><label>Descrição (opcional)</label><input id="incomeDescription" maxlength="140" placeholder="Ex.: Pagamento de novembro"></div><div class="field"><label>Valor (R$)</label><input id="incomeEntryValue" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" inputmode="decimal"></div><div class="field"><label>Data</label><input id="incomeEntryDate" type="date"></div><div class="field"><label>Repetição</label><select id="incomeRepeat"><option value="none">Não repetir</option><option value="monthly">Todo mês</option><option value="weekly">Toda semana</option><option value="yearly">Todo ano</option></select></div><div class="field"><label>Situação</label><select id="incomeStatus"><option value="recebido">Recebido</option><option value="previsto">Previsto (a receber)</option></select></div></div>
@@ -253,7 +253,16 @@ if(!localStorage.getItem(migrationKey)){
 
 // Abra o painel no mês atual, não em um mês fixo de demonstração.
 const localMonth=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
-let month=localMonth(),filter='todos',editing=null;const $=id=>document.getElementById(id);const save=()=>localStorage.setItem(storageKey,JSON.stringify(state));const original=p=>p.updated==null?p.value:+p.updated;const isPaid=p=>p.type==='construtora'&&+p.paid>=original(p);
+let month=localMonth(),filter='todos',editing=null;const $=id=>document.getElementById(id);const save=()=>{
+ try{
+  localStorage.setItem(storageKey,JSON.stringify(state));
+  return true;
+ }catch(error){
+  console.error('Falha ao salvar os dados locais:',error);
+  alert('Não foi possível salvar os dados neste navegador. Exporte um backup em Ajustes e confira o espaço disponível.');
+  return false;
+ }
+};const original=p=>p.updated==null?p.value:+p.updated;const isPaid=p=>p.type==='construtora'&&+p.paid>=original(p);
 let financeTab='resumo';
 function showFinanceTab(tab){
  if(!['resumo','movimentacoes','orcamento','recorrentes'].includes(tab))tab='resumo';
@@ -273,7 +282,22 @@ function showFinanceTab(tab){
 document.querySelectorAll('[data-finance-tab]').forEach(btn=>btn.addEventListener('click',()=>showFinanceTab(btn.dataset.financeTab)));
 function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===id));let headings={dashboard:['Seu apê, no azul.','Uma visão clara das suas contas e dos próximos passos.'],parcelas:['Parcelas do imóvel','Cada compromisso em seu lugar.'],gastos:['Finanças','Acompanhe rendimentos, despesas e seu planejamento.'],previsao:['Previsão de pagamentos','Antecipe os meses mais caros.'],relatorios:['Relatórios financeiros','Seu histórico de despesas e pagamentos em gráficos.'],objetivos:['Objetivos e mudança','Planeje a próxima etapa da sua casa.'],config:['Configurações','Dados que alimentam seu painel.']};$('heading').textContent=headings[id][0];$('subheading').textContent=headings[id][1];render();if(id==='gastos')showFinanceTab(financeTab);window.scrollTo(0,0)}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
-const select=$('monthSelect');for(let y=Math.min(2026,Number(month.slice(0,4)));y<=Math.max(2032,Number(month.slice(0,4))+1);y++)for(let m=1;m<=12;m++){if(y===2026&&m<11)continue;let dt=`${y}-${String(m).padStart(2,'0')}`,o=document.createElement('option');o.value=dt;o.textContent=new Date(`${dt}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});select.append(o)}select.value=month;select.addEventListener('change',e=>{month=e.target.value;render()});
+const select=$('monthSelect');
+function ensureMonthOption(key){
+ if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(key))return;
+ if(Array.from(select.options).some(o=>o.value===key))return;
+ const opt=document.createElement('option');opt.value=key;
+ opt.textContent=new Date(key+'-01T12:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+ select.add(opt);
+ Array.from(select.options).sort((a,b)=>a.value.localeCompare(b.value)).forEach(o=>select.add(o));
+}
+const monthKeys=[month,...state.expenses.map(e=>String(e.date).slice(0,7)),...state.incomeEntries.map(e=>String(e.date).slice(0,7)),...state.payments.map(e=>String(e.date).slice(0,7))].filter(k=>/^\d{4}-(0[1-9]|1[0-2])$/.test(k));
+const firstYear=Math.min(2024,...monthKeys.map(k=>Number(k.slice(0,4))));
+const lastYear=Math.max(2032,...monthKeys.map(k=>Number(k.slice(0,4))));
+for(let year=firstYear;year<=lastYear;year++)for(let m=1;m<=12;m++){
+ ensureMonthOption(year+'-'+String(m).padStart(2,'0'));
+}
+select.value=month;select.addEventListener('change',e=>{month=e.target.value;render()});
 function pendingRecurring(monthKey){
  const [year,m]=monthKey.split('-').map(Number);
  const lastDay=new Date(year,m,0).getDate();
@@ -404,7 +428,7 @@ function saveIncomeEntry(){
  if(!REP_FREQ.includes(frequency))return;
  if(editingIncomeEntry!==null){const at=state.incomeEntries.findIndex(e=>String(e.id)===String(editingIncomeEntry));if(at<0)return;const existing=state.incomeEntries[at];record.repeatRuleId=repUpdate('income',existing,record,frequency);state.incomeEntries[at]={...existing,...record}}
  else{record.repeatRuleId=repUpdate('income',null,record,frequency);state.incomeEntries.push({id:cryptoId(),...record})}
- save();closeModal('incomeModal');if(month!==monDate(date)){month=monDate(date);$('monthSelect').value=month}render();
+ save();closeModal('incomeModal');if(month!==monDate(date)){month=monDate(date);ensureMonthOption(month);$('monthSelect').value=month}render();
 }
 function deleteIncomeEntry(id){
  if(!confirm('Excluir este rendimento?'))return;
@@ -563,7 +587,7 @@ function saveExpense(){
  if(!REP_FREQ.includes(frequency))return;
  if(editingExpense!==null){const idx=state.expenses.findIndex(e=>Number(e.id)===editingExpense);if(idx<0)return;const existing=state.expenses[idx];record.repeatRuleId=repUpdate('expense',existing,record,frequency);state.expenses[idx]={...existing,...record}}
  else{record.repeatRuleId=repUpdate('expense',null,record,frequency);state.expenses.push({id:cryptoId(),...record})}
- save();closeModal('expenseModal');if(month!==date.slice(0,7)){month=date.slice(0,7);$('monthSelect').value=month;}render();
+ save();closeModal('expenseModal');if(month!==date.slice(0,7)){month=date.slice(0,7);ensureMonthOption(month);$('monthSelect').value=month;}render();
 }
 function deleteExpense(id){
  if(!confirm('Excluir este gasto?'))return;
@@ -586,7 +610,7 @@ function emptyExpensesMessage(){
  const label=new Date(latest+'-01T12:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
  return `<div class="mutedcard">Seus registros foram preservados. Você tem ${other.length} gasto(s) cadastrado(s), mas não há resultados neste mês. <button class="secondary" onclick="goToExpenseMonth('${latest}')">Ver lançamentos de ${esc(label)}</button></div>`;
 }
-function goToExpenseMonth(value){month=value;$('monthSelect').value=value;expenseCategoryFilter='';expenseSearchText='';$('expenseFilter').value='';$('expenseSearch').value='';render();}
+function goToExpenseMonth(value){month=value;ensureMonthOption(value);$('monthSelect').value=value;expenseCategoryFilter='';expenseSearchText='';$('expenseFilter').value='';$('expenseSearch').value='';render();}
 function renderBudgets(t){
  let spent={};for(const e of t.expenses){const c=e.category||'Outros';spent[c]=(spent[c]||0)+Number(e.value||0)}
  const planned=CATEGORIES.reduce((n,c)=>n+(+state.budgets[c]||0),0);
@@ -686,13 +710,33 @@ function validateBackup(v){
 }
 function applyImported(candidate){
  if(!validateBackup(candidate)){alert('O arquivo não corresponde a um backup válido do Apê no Azul.');return}
- if(!confirm('Substituir os dados atuais pelos dados importados? Exporte um backup antes, se precisar.'))return;
+ if(!confirm('Importar este backup e substituir os dados atuais? Os dados atuais serão guardados como cópia de recuperação neste navegador.'))return;
+ try{
+  localStorage.setItem(storageKey+'_before_import',JSON.stringify(state));
+ }catch(error){
+  alert('Não foi possível criar a cópia de segurança. Exporte o backup atual antes de importar outro.');
+  return;
+ }
  state={payments:candidate.payments,expenses:candidate.expenses,budgets:candidate.budgets||{},recurring:Array.isArray(candidate.recurring)?candidate.recurring:[],monthlyIncome:(candidate.monthlyIncome&&typeof candidate.monthlyIncome==='object'&&!Array.isArray(candidate.monthlyIncome))?candidate.monthlyIncome:{},incomeEntries:Array.isArray(candidate.incomeEntries)?candidate.incomeEntries:[],repeatRules:Array.isArray(candidate.repeatRules)?candidate.repeatRules:[],incomeEntriesMigratedV13:!!candidate.incomeEntriesMigratedV13,settings:{...freshState().settings,...candidate.settings},property:candidate.property||{price:276804.89,label:'Imóvel importado'}};
- save();render();alert('Dados importados neste navegador.');
+ if(!save()){state=JSON.parse(localStorage.getItem(storageKey));return}render();alert('Dados importados neste navegador.');
 }
 async function importData(event){const file=event.target.files?.[0];event.target.value='';if(!file)return;
  if(file.size>3*1024*1024){alert('Arquivo muito grande. Limite de 3 MB.');return}
  try{const obj=JSON.parse(await file.text());applyImported(obj.data||obj)}catch{alert('Não foi possível ler o arquivo JSON.')}
+}
+function restoreBeforeImport(){
+ const raw=localStorage.getItem(storageKey+'_before_import');
+ if(!raw){alert('Não há cópia de recuperação de importação neste navegador.');return}
+ let previous;
+ try{previous=JSON.parse(raw)}catch{alert('A cópia de recuperação está inválida.');return}
+ if(!validateBackup(previous)){alert('A cópia de recuperação não passou na validação.');return}
+ if(!confirm('Restaurar os dados anteriores à última importação? Exporte um backup dos dados atuais antes de continuar.'))return;
+ const current=JSON.stringify(state);
+ try{localStorage.setItem(storageKey+'_before_import',current)}catch{alert('Não foi possível preservar a versão atual. Operação cancelada.');return}
+ state=previous;
+ if(!save()){state=JSON.parse(current);return}
+ render();
+ alert('Dados anteriores à importação restaurados.');
 }
 function recoverLegacy(){let old;try{old=JSON.parse(localStorage.getItem(legacyKey))}catch{}
  if(!old){alert('Não há dados da versão anterior neste navegador.');return}
