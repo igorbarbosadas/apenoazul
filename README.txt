@@ -1,19 +1,22 @@
-APÊ NO AZUL · V0.3 · GitHub Pages
+APÊ NO AZUL v0.4 | GitHub Pages
 
-PUBLICAÇÃO:
-1. Abra seu repositório atual do GitHub Pages.
-2. Substitua os arquivos da raiz por: index.html, icon.svg, manifest.webmanifest, sw.js e README.txt.
-3. Faça commit e aguarde a publicação do GitHub Pages.
-4. Atualize a página com Ctrl+F5, caso veja a versão antiga.
+1. Extraia este ZIP.
+2. Envie index.html, icon.svg, manifest.webmanifest e sw.js para a raiz do repositório.
+3. Mantenha o GitHub Pages apontando para main / (root).
+4. Atualize a página. Caso esteja usando PWA instalado, feche e reabra após alguns segundos.
 
-ALTERAÇÕES:
-- Os dados iniciais agora são fictícios, sem informações pessoais do contrato.
-- Novo visual responsivo e melhorias na versão mobile.
-- Backup e restauração JSON com validação básica.
-- Dados da v0.2 continuam na chave antiga do navegador e podem ser recuperados manualmente em Ajustes.
-- Service worker atualizado para forçar a nova versão.
-- PWA demonstrativo sem servidor, login, banco de dados ou cobrança.
+NOVIDADES
+- Dados iniciais reais do imóvel Urban Vila Guilherme, Torre A, apto 0306.
+- 41 compromissos de contrato, incluindo financiamento separado.
+- Cadastrar e excluir parcelas.
+- Editar dados do imóvel, preço, entrega e financiamento.
+- Painel com informação de aperto financeiro.
+- Preservação dos registros salvos na chave da v0.3, sem substituir alterações existentes.
+- Restaurar cronograma original mediante confirmação, em Ajustes.
 
-SEGURANÇA:
-Não envie contratos, comprovantes ou documentos pessoais a um repositório público.
-A versão demonstrativa usa localStorage; não é indicada para guardar informações sensíveis.
+IMPORTANTE
+- Valores das parcelas são nominais e sujeitos a INCC.
+- Prestação bancária não é conhecida; deve ser preenchida manualmente.
+- O GitHub Pages é público. Dados iniciais inseridos no código são visíveis para visitantes.
+- Os registros feitos no app continuam salvos somente no navegador e não sincronizam entre dispositivos.
+- Faça backups JSON regularmente.
