@@ -1,37 +1,37 @@
 <div align="center">
+  <img src="assets/capa.svg" alt="Apê no Azul, organização financeira e planejamento imobiliário" width="100%">
 
-![Apê no Azul: seu imóvel planejado, suas finanças em dia](assets/capa.svg)
+  # Apê no Azul
+  **Seu imóvel planejado. Suas finanças em dia.**
 
-# 🏡 Apê no Azul
+  Um espaço para acompanhar seu dinheiro, organizar parcelas e planejar a conquista do imóvel.
 
-### Seu imóvel planejado. Suas finanças em dia.
-
-Organize a compra do seu imóvel, acompanhe parcelas e entenda seus gastos em um lugar só.
-
-[**Acessar o aplicativo**](https://igorbarbosadas.github.io/apenoazul/)
-
+  [Acessar o aplicativo](https://igorbarbosadas.github.io/apenoazul/)
 </div>
 
-## Uma visão mais clara do seu dinheiro
+## Acompanhe sua vida financeira com clareza
 
-O **Apê no Azul** foi criado para quem quer acompanhar a conquista do imóvel sem perder o controle das finanças. Ele reúne os compromissos da compra, os gastos cotidianos e as metas para a entrega das chaves.
+Registre rendimentos e despesas, diferencie valores previstos dos recebidos e confira como seus compromissos impactam os próximos meses. O Apê no Azul ajuda a planejar decisões com informações reunidas em um único lugar.
 
 ## O que você encontra no aplicativo
 
-- **Visão geral:** saldo projetado, próximos vencimentos e progresso dos pagamentos.
-- **Parcelas do imóvel:** calendário de compromissos e registro do que já foi pago.
-- **Finanças:** despesas por categoria, rendimentos por origem, orçamento e contas fixas.
-- **Lançamentos repetidos:** organize entradas e saídas mensais, semanais ou anuais, com confirmação a cada ocorrência.
-- **Previsão:** identifique meses com pagamentos mais altos e planeje-se com antecedência.
-- **Relatórios:** visualize a evolução das despesas, categorias e histórico de movimentações.
-- **Objetivos:** acompanhe a reserva para documentação, móveis e mudança.
+| Área | O que você pode fazer |
+|---|---|
+| Início | Consultar o panorama do mês, próximas parcelas e alertas |
+| Finanças | Registrar entradas e saídas, organizar contas e recorrências |
+| Imóvel | Acompanhar preço, parcelas, pagamentos, financiamento e entrega |
+| Agenda | Visualizar compromissos e previsões dos próximos meses |
+| Relatórios | Comparar valores e analisar despesas por categoria |
+| Metas | Planejar reservas para documentação, móveis e mudança |
+| Documentos | Organizar arquivos e comprovantes no dispositivo |
+| Ajustes | Personalizar valores de referência, aparência e backups |
 
-## Para quem é
+## Funciona no celular e no computador
 
-Para quem está se planejando para comprar, já comprou um imóvel na planta ou quer organizar as despesas da casa com clareza.
+A interface se adapta à tela e pode ser instalada como aplicativo em navegadores compatíveis com PWA.
 
-## Comece agora
+## Comece no seu ritmo
 
-Acesse **[Apê no Azul](https://igorbarbosadas.github.io/apenoazul/)** pelo computador ou celular.
+O projeto inclui um exemplo de planejamento imobiliário que pode ser editado. Cadastre seus próprios rendimentos, despesas e compromissos para transformar o painel no seu controle pessoal.
 
-O aplicativo está em desenvolvimento e recebe novas funcionalidades de forma contínua.
+O Apê no Azul está em desenvolvimento. Algumas funcionalidades online, como sincronização entre dispositivos e contas individuais, ainda não estão disponíveis.
