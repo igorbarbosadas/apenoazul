@@ -1,5 +1,7 @@
 <div align="center">
 
+![Apê no Azul: seu imóvel planejado, suas finanças em dia](assets/capa.svg)
+
 # 🏡 Apê no Azul
 
 ### Seu imóvel planejado. Suas finanças em dia.
@@ -18,7 +20,7 @@ O **Apê no Azul** foi criado para quem quer acompanhar a conquista do imóvel s
 
 - **Visão geral:** saldo projetado, próximos vencimentos e progresso dos pagamentos.
 - **Parcelas do imóvel:** calendário de compromissos e registro do que já foi pago.
-- **Meus gastos:** despesas por categoria, rendimentos por origem, orçamento e contas fixas.
+- **Finanças:** despesas por categoria, rendimentos por origem, orçamento e contas fixas.
 - **Lançamentos repetidos:** organize entradas e saídas mensais, semanais ou anuais, com confirmação a cada ocorrência.
 - **Previsão:** identifique meses com pagamentos mais altos e planeje-se com antecedência.
 - **Relatórios:** visualize a evolução das despesas, categorias e histórico de movimentações.
