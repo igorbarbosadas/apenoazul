@@ -1,0 +1,62 @@
+
+name: Publicar Apê no Azul
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "atualizacao.zip"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Buscar arquivos
+        uses: actions/checkout@v4
+
+      - name: Extrair aplicativo
+        run: |
+          mkdir -p site
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+
+          with zipfile.ZipFile("atualizacao.zip") as z:
+              for item in z.infolist():
+                  path = Path(item.filename)
+                  if (
+                      path.is_absolute()
+                      or ".." in path.parts
+                      or item.file_size > 100_000_000
+                  ):
+                      raise ValueError("Arquivo ZIP inválido")
+                  if item.is_dir():
+                      continue
+                  target = Path("site") / path
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(z.read(item))
+
+          assert Path("site/index.html").is_file(), "index.html ausente"
+          PY
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Preparar publicação
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Publicar aplicativo
+        id: deploy
+        uses: actions/deploy-pages@v4
