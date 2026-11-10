@@ -14,15 +14,17 @@ export const blank=()=>({schema:2,properties:[],selectedProperty:null,transactio
 export function normalize(raw){let s=structuredClone(raw);s.schema=2;for(let k of ['properties','transactions','payments','recurrences','cards','accounts','transfers','goals','documents'])if(!Array.isArray(s[k]))s[k]=[];s.budgets=s.budgets||{};s.settings={...blank().settings,...(s.settings||{})};s.meta=s.meta||{importWarnings:[]};return s}
 const amount=v=>Math.round(number(v)*100)/100;
 const dateValid=d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(String(d)))return false;const [y,m,day]=d.split('-').map(Number);const date=new Date(y,m-1,day,12);return date.getFullYear()===y&&date.getMonth()+1===m&&date.getDate()===day};
-export function validate(s){if(!s||typeof s!=='object'||!Array.isArray(s.transactions)||!Array.isArray(s.payments)||!Array.isArray(s.properties))return 'Estrutura do backup inválida';if(s.transactions.length>100000||s.payments.length>30000)return 'Quantidade de registros excedida';for(let t of s.transactions){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(t.id))||!dateValid(t.date)||!['income','expense'].includes(t.kind)||!Number.isFinite(Number(t.amount))||number(t.amount)<0||number(t.amount)>1e9)return 'Movimentação inválida'}if(new Set(s.transactions.map(x=>x.id)).size!==s.transactions.length)return 'Movimentações duplicadas no backup';for(let p of s.payments){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(p.id))||!dateValid(p.date)||number(p.amount)<0||number(p.paid)<0)return 'Parcela inválida'}for(let key of ['properties','recurrences','cards','accounts','transfers','goals','documents'])for(let item of s[key]||[]){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(item.id)))return 'Identificador inválido em '+key}for(let t of s.transfers||[]){if(!Number.isFinite(Number(t.amount))||Number(t.amount)<=0||Number(t.amount)>1e9||t.from===t.to||!dateValid(t.date))return 'Transferência inválida'}for(let a of s.accounts||[]){if(!Number.isFinite(Number(a.opening))||Math.abs(Number(a.opening))>1e9)return 'Saldo inicial da conta inválido'}
+export function validate(s){if(!s||typeof s!=='object'||!Array.isArray(s.transactions)||!Array.isArray(s.payments)||!Array.isArray(s.properties))return 'Estrutura do backup inválida';if(s.transactions.length>100000||s.payments.length>30000)return 'Quantidade de registros excedida';for(let t of s.transactions){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(t.id))||!dateValid(t.date)||!['income','expense'].includes(t.kind)||!Number.isFinite(Number(t.amount))||number(t.amount)<0||number(t.amount)>1e9)return 'Movimentação inválida'}if(new Set(s.transactions.map(x=>x.id)).size!==s.transactions.length)return 'Movimentações duplicadas no backup';
+ if(new Set(s.payments.map(x=>x.id)).size!==s.payments.length)return 'Parcelas do imóvel duplicadas';for(let p of s.payments){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(p.id))||!dateValid(p.date)||number(p.amount)<0||number(p.paid)<0)return 'Parcela inválida'}for(let key of ['properties','recurrences','cards','accounts','transfers','goals','documents'])for(let item of s[key]||[]){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(item.id)))return 'Identificador inválido em '+key}for(let t of s.transfers||[]){if(!Number.isFinite(Number(t.amount))||Number(t.amount)<=0||Number(t.amount)>1e9||t.from===t.to||!dateValid(t.date))return 'Transferência inválida'}for(let a of s.accounts||[]){if(!Number.isFinite(Number(a.opening))||Math.abs(Number(a.opening))>1e9)return 'Saldo inicial da conta inválido'}
  const cardIds=new Set((s.cards||[]).map(c=>c.id));
  if(cardIds.size!==(s.cards||[]).length)return 'Cartões duplicados';
+ if(new Set((s.accounts||[]).map(a=>a.id)).size!==(s.accounts||[]).length)return 'Contas duplicadas';
  for(const card of s.cards||[]){
   if(!String(card.name||'').trim()||!Number.isInteger(Number(card.closingDay))||!Number.isInteger(Number(card.dueDay))||Number(card.closingDay)<1||Number(card.closingDay)>28||Number(card.dueDay)<1||Number(card.dueDay)>28)return 'Configuração de cartão inválida';
  }
  for(const t of s.transactions){
   if(t.cardId&&(!cardIds.has(t.cardId)||t.kind!=='expense'||!['paid','planned'].includes(t.status)))return 'Compra vinculada a cartão inválido';
-  if(t.cardId&&t.status==='paid'&&(!t.paidAt||!dateValid(t.paidAt)))return 'Data de pagamento da fatura inválida';
+  if(t.cardId&&t.status==='paid'&&(!t.paidAt||!dateValid(t.paidAt)||!(s.accounts||[]).some(a=>a.id===t.accountId)))return 'Pagamento da fatura sem data ou conta válida';
  }
  const accountIds=new Set((s.accounts||[]).map(a=>a.id));
  for(const p of s.payments||[]){for(const h of p.history||[]){
@@ -45,8 +47,9 @@ export function paymentsFor(s,key){return s.payments.filter(p=>p.kind!=='financi
 // A mesma função é usada por Início, Finanças, Agenda e Relatórios.
 export const cents=value=>Math.round((number(value)+Number.EPSILON)*100);
 export const reais=value=>Math.round(value)/100;
+export const transactionEffectiveDate=t=>t.cardId&&t.status==='paid'&&t.paidAt?t.paidAt:t.date;
 export function cashflow(s,key){
- const tx=s.transactions.filter(t=>monthOf(t.cardId&&t.status==='paid'&&t.paidAt?t.paidAt:t.date)===key);
+ const tx=s.transactions.filter(t=>monthOf(transactionEffectiveDate(t))===key);
  const sum=(items,get=t=>t.amount)=>reais(items.reduce((total,t)=>total+cents(get(t)),0));
  const incomeReceived=sum(tx.filter(t=>t.kind==='income'&&t.status==='received'));
  const incomePlanned=sum(tx.filter(t=>t.kind==='income'&&t.status!=='received'));
@@ -102,6 +105,37 @@ export function cardStatement(s,cardId,key){
  const sum=entries=>reais(entries.reduce((acc,t)=>acc+cents(t.amount),0));
  return {items,total:sum(items),pending:sum(items.filter(t=>t.status!=='paid')),paid:sum(items.filter(t=>t.status==='paid'))};
 }
+
+// Revise ou cancele uma compra inteira apenas enquanto nenhuma parcela foi paga.
+// Retorna uma nova lista: não altera o estado original caso a operação falhe.
+export function cardPurchaseGroup(transactions, transactionId){
+ const origin=transactions.find(t=>t.id===transactionId&&t.cardId);
+ if(!origin)throw Error('Compra do cartão não encontrada.');
+ return transactions.filter(t=>t.cardId===origin.cardId&&(origin.installmentGroup?t.installmentGroup===origin.installmentGroup:t.id===origin.id));
+}
+export function reviseCardPurchase(s,transactionId,{cardId,description,category,total,count,purchaseDate}){
+ const old=cardPurchaseGroup(s.transactions,transactionId);
+ if(old.some(t=>t.status==='paid'))throw Error('Esta compra já possui parcelas pagas. Os valores confirmados devem ser preservados.');
+ const card=(s.cards||[]).find(c=>c.id===cardId);
+ if(!card)throw Error('Selecione um cartão válido.');
+ if(!String(description||'').trim()||!Number.isFinite(Number(total))||Number(total)<=0||Number(total)>1e9||!Number.isInteger(Number(count))||Number(count)<1||Number(count)>120)throw Error('Informe descrição, valor e quantidade de parcelas válidos.');
+ const first=cardFirstDueDate(purchaseDate,card.closingDay,card.dueDay);
+ const schedule=Number(count)===1?[{number:1,date:first,amount:reais(cents(total))}]:installmentSchedule({total,count:Number(count),firstDate:first});
+ const base=old[0],group=base.installmentGroup||id();
+ const replacements=schedule.map((installment,i)=>({
+  id:old[i]?.id||id(),kind:'expense',cardId:card.id,description:String(description).trim(),category:category||'Outros',source:'',
+  date:installment.date,purchaseDate,amount:installment.amount,status:'planned',accountId:null,
+  installmentGroup:group,installmentNumber:installment.number,installmentCount:Number(count)
+ }));
+ return {transactions:[...s.transactions.filter(t=>!old.some(o=>o.id===t.id)),...replacements],firstDue:first};
+}
+export function cancelCardPurchase(s,transactionId){
+ const old=cardPurchaseGroup(s.transactions,transactionId);
+ if(old.some(t=>t.status==='paid'))throw Error('Esta compra já possui parcelas pagas e não pode ser excluída por completo.');
+ const ids=new Set(old.map(t=>t.id));
+ return s.transactions.filter(t=>!ids.has(t.id));
+}
+
 export function installmentSchedule({total, count, firstDate}){
  const value=Number(total), quantity=Number(count);
  if(!Number.isFinite(value)||value<=0||value>1e9||!Number.isInteger(quantity)||quantity<2||quantity>120||!dateValid(firstDate))throw Error('Informe valor, 2 a 120 parcelas e primeira data válida.');
@@ -116,7 +150,7 @@ export function installmentSchedule({total, count, firstDate}){
   return {number:i+1, date:due, amount:reais(base+(i<rem?1:0))};
  });
 }
-export function categorySummary(s,key){const map=new Map();for(let t of s.transactions.filter(t=>monthOf(t.date)===key&&t.kind==='expense'&&t.status==='paid'))map.set(t.category||'Outros',(map.get(t.category||'Outros')||0)+t.amount);return [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name,total])=>({name,total}))}
+export function categorySummary(s,key){const map=new Map();for(let t of s.transactions.filter(t=>monthOf(transactionEffectiveDate(t))===key&&t.kind==='expense'&&t.status==='paid'))map.set(t.category||'Outros',(map.get(t.category||'Outros')||0)+t.amount);return [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name,total])=>({name,total}))}
 // Pagamentos do imóvel só alteram uma conta quando o usuário informa a conta de origem.
 // Histórico legado não é associado automaticamente a nenhuma conta.
 export function accountBalances(s){
