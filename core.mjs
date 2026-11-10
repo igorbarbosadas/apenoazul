@@ -25,6 +25,16 @@ export function validate(s){if(!s||typeof s!=='object'||!Array.isArray(s.transac
  for(const t of s.transactions){
   if(t.cardId&&(!cardIds.has(t.cardId)||t.kind!=='expense'||!['paid','planned'].includes(t.status)))return 'Compra vinculada a cartão inválido';
   if(t.cardId&&t.status==='paid'&&(!t.paidAt||!dateValid(t.paidAt)||!(s.accounts||[]).some(a=>a.id===t.accountId)))return 'Pagamento da fatura sem data ou conta válida';
+  if(t.cardId&&t.cardPayments!==undefined){
+   if(!Array.isArray(t.cardPayments)||t.cardPayments.length>10000)return 'Histórico de fatura inválido';
+   let paid=0;
+   for(const h of t.cardPayments){
+    if(!dateValid(h.date)||!Number.isFinite(Number(h.amount))||cents(h.amount)<=0||!(s.accounts||[]).some(a=>a.id===h.accountId))return 'Pagamento parcial inválido';
+    paid+=cents(h.amount);
+   }
+   if(paid>cents(t.amount)||((paid===cents(t.amount))!==(t.status==='paid')))return 'Saldo da fatura inconsistente';
+  }
+
  }
  const accountIds=new Set((s.accounts||[]).map(a=>a.id));
  for(const p of s.payments||[]){for(const h of p.history||[]){
@@ -48,13 +58,57 @@ export function paymentsFor(s,key){return s.payments.filter(p=>p.kind!=='financi
 export const cents=value=>Math.round((number(value)+Number.EPSILON)*100);
 export const reais=value=>Math.round(value)/100;
 export const transactionEffectiveDate=t=>t.cardId&&t.status==='paid'&&t.paidAt?t.paidAt:t.date;
+// Histórico novo: pagamentos distribuídos por parcela; registros antigos pagos
+// continuam sendo reconhecidos exatamente uma vez, mesmo sem cardPayments.
+export function cardPaymentEntries(t){
+ if(!t.cardId)return [];
+ if(Array.isArray(t.cardPayments))return t.cardPayments;
+ return t.status==='paid'&&t.paidAt&&t.accountId
+  ?[{date:t.paidAt,amount:t.amount,accountId:t.accountId}]:[];
+}
+export const cardPaid=t=>reais(cardPaymentEntries(t).reduce((sum,p)=>sum+cents(p.amount),0));
+export const cardRemaining=t=>reais(Math.max(0,cents(t.amount)-cents(cardPaid(t))));
+export function registerCardPayment(s,cardId,key,amount,accountId,date){
+ const card=(s.cards||[]).find(c=>c.id===cardId);
+ if(!card)throw Error('Cartão não encontrado.');
+ if(!(s.accounts||[]).some(a=>a.id===accountId))throw Error('Selecione uma conta válida.');
+ if(!dateValid(date))throw Error('Informe uma data real de pagamento.');
+ const valueCents=cents(amount);
+ const rows=s.transactions.filter(t=>t.cardId===cardId&&monthOf(t.date)===key&&cardRemaining(t)>0)
+  .sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));
+ const remainingCents=rows.reduce((v,t)=>v+cents(cardRemaining(t)),0);
+ if(!Number.isFinite(Number(amount))||valueCents<=0||valueCents>remainingCents)throw Error('O pagamento precisa ser maior que zero e não ultrapassar o saldo da fatura.');
+ let available=valueCents;const changes=[];
+ for(const t of rows){
+  if(available<=0)break;
+  const allocated=Math.min(available,cents(cardRemaining(t)));available-=allocated;
+  const history=cardPaymentEntries(t).map(p=>({...p}));
+  history.push({id:id(),date,amount:reais(allocated),accountId});
+  changes.push({id:t.id,history,fullyPaid:history.reduce((sum,p)=>sum+cents(p.amount),0)===cents(t.amount)});
+ }
+ // Todas as validações ocorrem antes de alterar o estado.
+ for(const ch of changes){const tx=rows.find(t=>t.id===ch.id);tx.cardPayments=ch.history;
+  tx.status=ch.fullyPaid?'paid':'planned';tx.paidAt=ch.fullyPaid?date:null;
+  tx.accountId=ch.fullyPaid?accountId:null;
+ }
+ return {paid:reais(valueCents),remaining:reais(remainingCents-valueCents),installments:changes.length};
+}
+
 export function cashflow(s,key){
- const tx=s.transactions.filter(t=>monthOf(transactionEffectiveDate(t))===key);
+ const tx=s.transactions.filter(t=>!t.cardId&&monthOf(transactionEffectiveDate(t))===key);
+ // Compra no cartão só vira saída quando o dinheiro realmente sai da conta.
+ // O restante em aberto fica previsto no mês de vencimento da fatura.
+ const cardTx=s.transactions.filter(t=>t.cardId);
+ const cardPaidTx=cardTx.flatMap(t=>cardPaymentEntries(t).filter(h=>monthOf(h.date)===key)
+  .map(h=>({...t,amount:h.amount,date:h.date,paidAt:h.date,status:'paid',accountId:h.accountId})));
+ const cardPlannedTx=cardTx.filter(t=>monthOf(t.date)===key&&cardRemaining(t)>0)
+  .map(t=>({...t,amount:cardRemaining(t),status:'planned'}));
+ const entries=[...tx,...cardPaidTx,...cardPlannedTx];
  const sum=(items,get=t=>t.amount)=>reais(items.reduce((total,t)=>total+cents(get(t)),0));
- const incomeReceived=sum(tx.filter(t=>t.kind==='income'&&t.status==='received'));
- const incomePlanned=sum(tx.filter(t=>t.kind==='income'&&t.status!=='received'));
- const spent=sum(tx.filter(t=>t.kind==='expense'&&t.status==='paid'));
- const expensePlanned=sum(tx.filter(t=>t.kind==='expense'&&t.status!=='paid'));
+ const incomeReceived=sum(entries.filter(t=>t.kind==='income'&&t.status==='received'));
+ const incomePlanned=sum(entries.filter(t=>t.kind==='income'&&t.status!=='received'));
+ const spent=sum(entries.filter(t=>t.kind==='expense'&&t.status==='paid'));
+ const expensePlanned=sum(entries.filter(t=>t.kind==='expense'&&t.status!=='paid'));
  const p=paymentsFor(s,key);
  // Pagamentos realizados são reconhecidos no mês em que o dinheiro saiu,
  // não no mês do vencimento. Histórico nunca é somado novamente ao campo paid.
@@ -84,7 +138,7 @@ export function cashflow(s,key){
  return {key,incomeIncomplete,incomeReceived,incomePlanned,spent,expensePlanned,
   propertyPaid,propertyPending,repeatingIncome,repeatingExpenses,referenceUsed,
   incomeForecast,bankPay,bankNeedsStart,reserve,committed,projected,realized,
-  txCount:tx.length,unconfirmed:due.length};
+  txCount:entries.length,unconfirmed:due.length};
 }
 
 export function series(s,key,n=6){return Array.from({length:n},(_,i)=>cashflow(s,addMonths(key,i-n+1)))}
@@ -103,7 +157,7 @@ export function cardFirstDueDate(purchaseDate,closingDay,dueDay){
 export function cardStatement(s,cardId,key){
  const items=s.transactions.filter(t=>t.cardId===cardId&&monthOf(t.date)===key);
  const sum=entries=>reais(entries.reduce((acc,t)=>acc+cents(t.amount),0));
- return {items,total:sum(items),pending:sum(items.filter(t=>t.status!=='paid')),paid:sum(items.filter(t=>t.status==='paid'))};
+ return {items,total:sum(items),pending:sum(items.map(t=>({amount:cardRemaining(t)}))),paid:sum(items.map(t=>({amount:cardPaid(t)})))};
 }
 
 // Revise ou cancele uma compra inteira apenas enquanto nenhuma parcela foi paga.
@@ -115,7 +169,7 @@ export function cardPurchaseGroup(transactions, transactionId){
 }
 export function reviseCardPurchase(s,transactionId,{cardId,description,category,total,count,purchaseDate}){
  const old=cardPurchaseGroup(s.transactions,transactionId);
- if(old.some(t=>t.status==='paid'))throw Error('Esta compra já possui parcelas pagas. Os valores confirmados devem ser preservados.');
+ if(old.some(t=>cardPaid(t)>0))throw Error('Esta compra já possui parcelas pagas. Os valores confirmados devem ser preservados.');
  const card=(s.cards||[]).find(c=>c.id===cardId);
  if(!card)throw Error('Selecione um cartão válido.');
  if(!String(description||'').trim()||!Number.isFinite(Number(total))||Number(total)<=0||Number(total)>1e9||!Number.isInteger(Number(count))||Number(count)<1||Number(count)>120)throw Error('Informe descrição, valor e quantidade de parcelas válidos.');
@@ -131,7 +185,7 @@ export function reviseCardPurchase(s,transactionId,{cardId,description,category,
 }
 export function cancelCardPurchase(s,transactionId){
  const old=cardPurchaseGroup(s.transactions,transactionId);
- if(old.some(t=>t.status==='paid'))throw Error('Esta compra já possui parcelas pagas e não pode ser excluída por completo.');
+ if(old.some(t=>cardPaid(t)>0))throw Error('Esta compra já possui parcelas pagas e não pode ser excluída por completo.');
  const ids=new Set(old.map(t=>t.id));
  return s.transactions.filter(t=>!ids.has(t.id));
 }
@@ -150,7 +204,16 @@ export function installmentSchedule({total, count, firstDate}){
   return {number:i+1, date:due, amount:reais(base+(i<rem?1:0))};
  });
 }
-export function categorySummary(s,key){const map=new Map();for(let t of s.transactions.filter(t=>monthOf(transactionEffectiveDate(t))===key&&t.kind==='expense'&&t.status==='paid'))map.set(t.category||'Outros',(map.get(t.category||'Outros')||0)+t.amount);return [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name,total])=>({name,total}))}
+export function categorySummary(s,key){
+ const map=new Map();
+ for(const t of s.transactions){
+  if(t.kind!=='expense')continue;
+  const payments=t.cardId?cardPaymentEntries(t).filter(p=>monthOf(p.date)===key).map(p=>p.amount)
+   :(t.status==='paid'&&monthOf(transactionEffectiveDate(t))===key?[t.amount]:[]);
+  for(const value of payments){const cat=t.category||'Outros';map.set(cat,reais(cents(map.get(cat)||0)+cents(value)))}
+ }
+ return [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name,total])=>({name,total}));
+}
 // Pagamentos do imóvel só alteram uma conta quando o usuário informa a conta de origem.
 // Histórico legado não é associado automaticamente a nenhuma conta.
 export function accountBalances(s){
@@ -158,7 +221,8 @@ export function accountBalances(s){
  const apply=(accountId,delta)=>{if(!balances.has(accountId))return;balances.set(accountId,reais(cents(balances.get(accountId))+cents(delta)))};
  for(const t of s.transactions||[]){
   if(t.kind==='income'&&t.status==='received')apply(t.accountId,number(t.amount));
-  if(t.kind==='expense'&&t.status==='paid')apply(t.accountId,-number(t.amount));
+  if(t.cardId){for(const h of cardPaymentEntries(t))apply(h.accountId,-number(h.amount));}
+  else if(t.kind==='expense'&&t.status==='paid')apply(t.accountId,-number(t.amount));
  }
  for(const p of s.payments||[]){
   if(p.kind==='financing')continue;
