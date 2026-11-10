@@ -10,11 +10,20 @@ export const number=x=>Number.isFinite(Number(x))?Number(x):0;
 export function parseBRL(raw){const v=String(raw??'').trim().replace(/\s/g,'').replace(/^R\$/,'');if(!v)return NaN;let x=v;if(x.includes(',')){if(!/^(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?$/.test(x))return NaN;x=x.replace(/\./g,'').replace(',','.')}else if(/^\d{1,3}\.\d{3}$/.test(x))x=x.replace('.','');else if(!/^\d+(?:\.\d{1,2})?$/.test(x))return NaN;return Number(x)}
 export const id=()=>String(Date.now())+'_'+Math.random().toString(36).slice(2,9);
 export const CATEGORIES=['Moradia','Mercado','Transporte','Saúde','Educação','Lazer','Compras','Assinaturas','Serviços','Impostos','Outros'];
-export const blank=()=>({schema:2,properties:[],selectedProperty:null,transactions:[],payments:[],recurrences:[],accounts:[{id:'main',name:'Conta principal',opening:0}],transfers:[],budgets:{},goals:[],documents:[],settings:{referenceIncome:0,referenceEnabled:false,bankPayment:0,bankStart:'',reserve:0,theme:'light',currency:'BRL',alerts:7},meta:{created:today(),importWarnings:[]}});
-export function normalize(raw){let s=structuredClone(raw);s.schema=2;for(let k of ['properties','transactions','payments','recurrences','accounts','transfers','goals','documents'])if(!Array.isArray(s[k]))s[k]=[];s.budgets=s.budgets||{};s.settings={...blank().settings,...(s.settings||{})};s.meta=s.meta||{importWarnings:[]};return s}
+export const blank=()=>({schema:2,properties:[],selectedProperty:null,transactions:[],payments:[],recurrences:[],cards:[],accounts:[{id:'main',name:'Conta principal',opening:0}],transfers:[],budgets:{},goals:[],documents:[],settings:{referenceIncome:0,referenceEnabled:false,bankPayment:0,bankStart:'',reserve:0,theme:'light',currency:'BRL',alerts:7},meta:{created:today(),importWarnings:[]}});
+export function normalize(raw){let s=structuredClone(raw);s.schema=2;for(let k of ['properties','transactions','payments','recurrences','cards','accounts','transfers','goals','documents'])if(!Array.isArray(s[k]))s[k]=[];s.budgets=s.budgets||{};s.settings={...blank().settings,...(s.settings||{})};s.meta=s.meta||{importWarnings:[]};return s}
 const amount=v=>Math.round(number(v)*100)/100;
 const dateValid=d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(String(d)))return false;const [y,m,day]=d.split('-').map(Number);const date=new Date(y,m-1,day,12);return date.getFullYear()===y&&date.getMonth()+1===m&&date.getDate()===day};
-export function validate(s){if(!s||typeof s!=='object'||!Array.isArray(s.transactions)||!Array.isArray(s.payments)||!Array.isArray(s.properties))return 'Estrutura do backup inválida';if(s.transactions.length>100000||s.payments.length>30000)return 'Quantidade de registros excedida';for(let t of s.transactions){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(t.id))||!dateValid(t.date)||!['income','expense'].includes(t.kind)||!Number.isFinite(Number(t.amount))||number(t.amount)<0||number(t.amount)>1e9)return 'Movimentação inválida'}if(new Set(s.transactions.map(x=>x.id)).size!==s.transactions.length)return 'Movimentações duplicadas no backup';for(let p of s.payments){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(p.id))||!dateValid(p.date)||number(p.amount)<0||number(p.paid)<0)return 'Parcela inválida'}for(let key of ['properties','recurrences','accounts','transfers','goals','documents'])for(let item of s[key]||[]){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(item.id)))return 'Identificador inválido em '+key}for(let t of s.transfers||[]){if(!Number.isFinite(Number(t.amount))||Number(t.amount)<=0||Number(t.amount)>1e9||t.from===t.to||!dateValid(t.date))return 'Transferência inválida'}for(let a of s.accounts||[]){if(!Number.isFinite(Number(a.opening))||Math.abs(Number(a.opening))>1e9)return 'Saldo inicial da conta inválido'}
+export function validate(s){if(!s||typeof s!=='object'||!Array.isArray(s.transactions)||!Array.isArray(s.payments)||!Array.isArray(s.properties))return 'Estrutura do backup inválida';if(s.transactions.length>100000||s.payments.length>30000)return 'Quantidade de registros excedida';for(let t of s.transactions){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(t.id))||!dateValid(t.date)||!['income','expense'].includes(t.kind)||!Number.isFinite(Number(t.amount))||number(t.amount)<0||number(t.amount)>1e9)return 'Movimentação inválida'}if(new Set(s.transactions.map(x=>x.id)).size!==s.transactions.length)return 'Movimentações duplicadas no backup';for(let p of s.payments){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(p.id))||!dateValid(p.date)||number(p.amount)<0||number(p.paid)<0)return 'Parcela inválida'}for(let key of ['properties','recurrences','cards','accounts','transfers','goals','documents'])for(let item of s[key]||[]){if(!/^[A-Za-z0-9_-]{1,100}$/.test(String(item.id)))return 'Identificador inválido em '+key}for(let t of s.transfers||[]){if(!Number.isFinite(Number(t.amount))||Number(t.amount)<=0||Number(t.amount)>1e9||t.from===t.to||!dateValid(t.date))return 'Transferência inválida'}for(let a of s.accounts||[]){if(!Number.isFinite(Number(a.opening))||Math.abs(Number(a.opening))>1e9)return 'Saldo inicial da conta inválido'}
+ const cardIds=new Set((s.cards||[]).map(c=>c.id));
+ if(cardIds.size!==(s.cards||[]).length)return 'Cartões duplicados';
+ for(const card of s.cards||[]){
+  if(!String(card.name||'').trim()||!Number.isInteger(Number(card.closingDay))||!Number.isInteger(Number(card.dueDay))||Number(card.closingDay)<1||Number(card.closingDay)>28||Number(card.dueDay)<1||Number(card.dueDay)>28)return 'Configuração de cartão inválida';
+ }
+ for(const t of s.transactions){
+  if(t.cardId&&(!cardIds.has(t.cardId)||t.kind!=='expense'||!['paid','planned'].includes(t.status)))return 'Compra vinculada a cartão inválido';
+  if(t.cardId&&t.status==='paid'&&(!t.paidAt||!dateValid(t.paidAt)))return 'Data de pagamento da fatura inválida';
+ }
  const accountIds=new Set((s.accounts||[]).map(a=>a.id));
  for(const p of s.payments||[]){for(const h of p.history||[]){
   if(h.accountId!==undefined&&h.accountId!==null&&h.accountId!==''&&!accountIds.has(h.accountId))return 'Conta de origem inexistente em pagamento do imóvel';
@@ -37,7 +46,7 @@ export function paymentsFor(s,key){return s.payments.filter(p=>p.kind!=='financi
 export const cents=value=>Math.round((number(value)+Number.EPSILON)*100);
 export const reais=value=>Math.round(value)/100;
 export function cashflow(s,key){
- const tx=s.transactions.filter(t=>monthOf(t.date)===key);
+ const tx=s.transactions.filter(t=>monthOf(t.cardId&&t.status==='paid'&&t.paidAt?t.paidAt:t.date)===key);
  const sum=(items,get=t=>t.amount)=>reais(items.reduce((total,t)=>total+cents(get(t)),0));
  const incomeReceived=sum(tx.filter(t=>t.kind==='income'&&t.status==='received'));
  const incomePlanned=sum(tx.filter(t=>t.kind==='income'&&t.status!=='received'));
@@ -79,6 +88,20 @@ export function series(s,key,n=6){return Array.from({length:n},(_,i)=>cashflow(s
 export function projection(s,key,n=12){return Array.from({length:n},(_,i)=>cashflow(s,addMonths(key,i)))}
 // Uma compra parcelada gera compromissos futuros, não pagamentos realizados.
 // Todos os valores são distribuídos em centavos, sem perder nem criar centavos.
+// Para compras no cartão: vencimento da fatura conforme fechamento e pagamento.
+export function cardFirstDueDate(purchaseDate,closingDay,dueDay){
+ if(!dateValid(purchaseDate)||!Number.isInteger(Number(closingDay))||!Number.isInteger(Number(dueDay))||closingDay<1||closingDay>28||dueDay<1||dueDay>28)throw Error('Dados de cartão ou data inválidos');
+ const [year,m,day]=purchaseDate.split('-').map(Number);
+ const closeOffset=day>closingDay?1:0;
+ const invoiceOffset=closeOffset+(dueDay<=closingDay?1:0);
+ const d=new Date(year,m-1+invoiceOffset,1,12);
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(dueDay).padStart(2,'0')}`;
+}
+export function cardStatement(s,cardId,key){
+ const items=s.transactions.filter(t=>t.cardId===cardId&&monthOf(t.date)===key);
+ const sum=entries=>reais(entries.reduce((acc,t)=>acc+cents(t.amount),0));
+ return {items,total:sum(items),pending:sum(items.filter(t=>t.status!=='paid')),paid:sum(items.filter(t=>t.status==='paid'))};
+}
 export function installmentSchedule({total, count, firstDate}){
  const value=Number(total), quantity=Number(count);
  if(!Number.isFinite(value)||value<=0||value>1e9||!Number.isInteger(quantity)||quantity<2||quantity>120||!dateValid(firstDate))throw Error('Informe valor, 2 a 120 parcelas e primeira data válida.');
